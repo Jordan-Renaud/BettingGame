@@ -1,73 +1,41 @@
 ﻿using System;
 
-namespace MyFirstConsoleApp
+namespace BettingGame
 {
     class Program
     {
         static void Main(string[] args)
         {
-            //Create Guys
-            Guy Andrew = new Guy() { Name = "Andrew", Account = 50 };
-            Guy Bob = new Guy() { Name = "Bob", Account = 100 };
+            //Create Player
+            Player player = new Player() { Name = "The Player", Account = 100 };
+            double odds = 0.75;
 
             //Enter program until user breaks out.
             while (true)
             {
-                Andrew.AccountStatement();
-                Bob.AccountStatement();
-                Console.WriteLine("");
-                Console.Write("Please enter an amount to transfer or leave blank to exit: ");
+                Console.Write($"\nWelcome to the casino. The odds are {odds}\n");
+                player.AccountStatement();
+                Console.Write("\nHow much do you want to bet: ");
                 string strAmount = Console.ReadLine();
 
                 //check for user break out.
                 if (strAmount == "") return;
 
                 //checks if amount is a number
-                if (int.TryParse(strAmount, out int amount))
+                if (int.TryParse(strAmount, out int amount) && player.CanBet(amount))
                 {
-                    string personRecievingMoney;
+                    int pot = amount * 2;
+                    Random random = new Random();
 
-                    //loops until user enters either Andrew or Bob
-                    do
+                    if (odds >= random.NextDouble())
                     {
-                        Console.Write("Send to Andrew or Bob: ");
-                        personRecievingMoney = Console.ReadLine();
-                    } while (personRecievingMoney != "Andrew" && personRecievingMoney != "Bob");
-
-                    //checks who is sending money to who
-                    if (personRecievingMoney == "Andrew")
+                        //handle win
+                        Console.WriteLine($"\nYou win {pot}\n");
+                        player.Account += pot;
+                    } else
                     {
-                        handleTransferingMoney(Bob, Andrew, amount);
-                    }
-                    else if (personRecievingMoney == "Bob")
-                    {
-                        handleTransferingMoney(Andrew, Bob, amount);
-                    }
-
-                    //logic for transfer of money
-                    void handleTransferingMoney(Guy personSending, Guy personRecieving, int amount)
-                    {
-                        //if person doesn't have enough ££ restarts program
-                        if (!personSending.CanGiveCash(amount))
-                        {
-                            Console.WriteLine("");
-                            Console.WriteLine($"{personSending.Name} does not have £{amount} to send. Please try again.");
-                            Console.WriteLine("");
-                            return;
-                        };
-
-                        //loging out info
-                        personRecieving.AccountStatement();
-                        personSending.AccountStatement();
-
-                        Console.WriteLine("");
-                        Console.WriteLine($"Sending £{amount} to {personRecieving.Name}");
-                        Console.WriteLine("Updating...");
-                        Console.WriteLine("");
-
-                        //transfering money
-                        personSending.SendCashTo(personRecieving, amount);
-                        personRecieving.RecieveAmount(amount);
+                        Console.WriteLine("\nBad Luck, you lose.\n");
+                        player.Account -= amount;
                     }
 
                 }
@@ -78,44 +46,33 @@ namespace MyFirstConsoleApp
         }
     }
 
-    class Guy
+    class Player
     {
         public string Name;
         public int Account;
 
-        public bool CanGiveCash(int amountOfCash)
+        public bool CanBet(int amountOfCash)
         {
             return Account >= amountOfCash;
         }
 
-        private void RemoveCashFromAccount(int amountOfCash)
+        public void LoseMoney(int amountOfCash)
         {
-            if (CanGiveCash(amountOfCash))
+            if (CanBet(amountOfCash))
             {
                 Account -= amountOfCash;
             }
         }
 
-        public int SendCashTo(Guy person, int amountOfCash)
-        {
-            RemoveCashFromAccount(amountOfCash);
-            return person.Account + amountOfCash;
-        }
-
-        public void RecieveAmount(int amountOfCash)
+        public void WinMoney(int amountOfCash)
         {
             Account += amountOfCash;
         }
 
         public void AccountStatement()
         {
-            Console.WriteLine("{0} has £{1} in their account.", Name, Account);
+            Console.WriteLine($"{Name} has {Account} bucks");
         }
-        //GiveCash ✅
-        //recieve cash
-        //log cash amount✅
-
-
     }
 }
 
